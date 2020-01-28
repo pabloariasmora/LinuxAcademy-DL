@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from __future__ import unicode_literals
 import os
 import platform
@@ -9,6 +10,10 @@ from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 import time
 import youtube_dl
+
+if len(sys.argv) < 3:
+    print("Missing Arguments")
+    exit(1)
 
 username = sys.argv[1]
 pwd = sys.argv[2]
@@ -37,6 +42,15 @@ if platform.system() == 'Linux':
     else:
         print("Chromedriver not found; expected path '/usr/bin/chromedriver'")
         exit(1)
+
+if platform.system() == 'Darwin':
+    if os.path.exists("/usr/local/bin/chromedriver"):
+        browser = webdriver.Chrome(executable_path="/usr/local/bin/chromedriver",
+                                   options=chrome_options)
+    else:
+        print("Chromedriver not found; expected path '/usr/local/bin/chromedriver'")
+        exit(1)
+
 else:
     if os.path.exists("C:/ChromeDriver/chromedriver.exe"):
         browser = webdriver.Chrome(executable_path="C:/ChromeDriver/chromedriver.exe",
@@ -82,7 +96,8 @@ parsed_html = BeautifulSoup(html, 'html5lib')
 urls = []
 lessons = []
 
-title = parsed_html.find('span', attrs={'class', 'course-title'}).text
+# title = parsed_html.find('span', attrs={'class', 'course-title'}).text
+title = parsed_html.find('h2', attrs={'class', 'm-b-0'}).find('span').text;
 anchors = parsed_html.find_all('a', attrs={'class', 'syllabus-item'})
 
 for anchor in anchors:
@@ -102,6 +117,11 @@ print("Starting download...")
 
 if not os.path.exists(os.getcwd() + "/cookies.txt"):
     print("Cookies.txt not found!")
+    print("""Login to LinuxAcademy and visit the course page e.g. 
+    https://linuxacademy.com/cp/modules/view/id/287 and with the cookies.txt extention installed, 
+    click on the icon of the extension and choose To download cookies for this tab click here. 
+    Copy the downloaded txt file to root of the cloned repo. Make sure that the name of the file is cookies.txt. 
+    Repeat when you an encounter exception in downloading the videos (assuming you have an active subscription).""")
     exit(1)
 
 try:
